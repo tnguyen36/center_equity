@@ -1,0 +1,76 @@
+<% include partials/header %>
+<a href = "/">Homepage</a>
+<div class="container-fluid">
+	<h1 class="text-center">Hello and Welcome to<br>The Center of Equity and Inclusion</h1>
+	<h4>Please Register Below &emsp;Already a user? <a href="/login">Login Here</a></h4>
+	<form action="/register" method="POST">
+	  	<div class="form-group row">
+	   		<label for="firstName" class="col-lg-2 col-form-label">First Name:</label>
+	   		<div class="col-lg-2">
+			    <input type="text" class="form-control form-control-sm" id="firstName" name="firstName" required>
+			</div>
+	 	</div>
+		<div class="form-group row">
+			<label for="lastName" class="col-lg-2 col-form-label">Last Name:</label>
+			<div class="col-lg-2">
+			    <input type="text" class="form-control form-control-sm" id="lastName" name="lastName" required>
+			</div>
+		</div>
+		<div class="form-group row">
+			<label for="email" class="col-lg-2 col-form-label">Student Email:</label>
+			<div class="col-lg-2">
+			    <input type="email" class="form-control form-control-sm" id="email" name="username" required>
+			</div>
+		</div>
+		<div class="form-group row">
+			<label for="rank" class="col-lg-2 col-form-label">Class Rank:</label>
+			<div class="col-lg-2">
+			    <select class="form-control form-control-sm" id="rank" name="rank">
+			  		<option value="Freshman">Freshman</option>
+					<option value="Sophmore">Sophmore</option>
+					<option value="Junior">Junior</option>
+					<option value="Senior">Senior</option>
+				</select>
+			</div>
+		</div>
+		<div class="form-group row">
+			<label for="reason" class="col-lg-2 col-form-label">Reason for Visiting With us Today:</label>
+			<div class="col-lg-2">
+			    <select class="form-control form-control-sm" id="reason" name="reason">
+			  		<option value="Reason1">Give a reason here</option>
+					<option value="Reason2">Give a reason here</option>
+					<option value="Reason3">Give a reason here</option>
+					<option value="Reason4">Give a reason here</option>
+				</select>
+			</div>
+		</div>
+		<div class="form-group row">
+			<label for="password" class="col-lg-2 col-form-label">Password:</label>
+			<div class="col-lg-2">
+			    <input type="password" class="form-control form-control-sm" id="password" name="password" required>
+			</div>
+		</div>
+		<div class="form-group row">
+			<label for="password2" class="col-lg-2 col-form-label">ReEnter Password:</label>
+			<div class="col-lg-2">
+			    <input type="password" class="form-control form-control-sm" id="password2" required>
+			</div>
+		</div>
+		<div class="form-group row">
+			<label for="subscribe" class="col-lg-3 col-form-label">Would you like to recieve our newsletters?</label>
+			<div class="col-lg-2">
+			    <div class="form-check form-check-inline">
+	  				<input class="form-check-input" type="radio" name="subscribe" id="subscribe" value="yes" required>
+					<label class="form-check-label" for="subscribe">Yes</label>
+				</div>
+				<div class="form-check form-check-inline">
+	  				<input class="form-check-input" type="radio" name="subscribe" value="no">
+					<label class="form-check-label" for="subscribe">No</label>
+				</div>
+			</div>
+		</div>
+		<button class="btn btn-secondary">Register</button>
+	</form>
+</div>
+
+<% include partials/footer %>
