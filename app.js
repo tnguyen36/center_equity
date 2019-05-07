@@ -6,7 +6,8 @@ var passport = require("passport");
 var LocalStrategy = require("passport-local");
 var User = require("./models/user");
 
-mongoose.connect("mongodb://localhost:27017/center_equity", {useNewUrlParser: true})
+const databaseUri = process.env.MONGODB_URI || "mongodb://localhost:27017/center_equity";
+mongoose.connect(databaseUri, {useNewUrlParser: true})
 	.then(() => console.log("Database connected"))
 	.catch(err => console.log("Database connection error: " + err.message));
 
@@ -65,6 +66,6 @@ app.post("/login", passport.authenticate("local",
 
 });
 
-app.listen(3000, function() {
+app.listen(process.env.PORT, process.env.IP, function() {
 	console.log("Server has started!");
 });
