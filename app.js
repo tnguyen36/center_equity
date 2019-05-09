@@ -200,6 +200,6 @@ app.post('/reset', function(req, res) {
 });
 
 // http request listener
-app.listen(process.env.port, process.env.ip, function() {
+app.listen(process.env.PORT, process.env.IP, function() {
 	console.log("Server has started!");
 });
