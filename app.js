@@ -84,7 +84,7 @@ app.get("/forgot", function(req, res) {
 	res.render("forgot");
 });
 
-app.post("/forgot", function(req, res) {
+app.post("/forgot", function(req, res, next) {
 	async.waterfall([
 		function(done) {
 			crypto.randomBytes(20, function(err, buf) {
@@ -151,7 +151,7 @@ app.get("/reset/:token", function(req, res) {
 
 });
 
-app.post('/reset', function(req, res) {
+app.post('/reset', function(req, res, next) {
   async.waterfall([
     function(done) {
       User.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } }, function(err, user) {
