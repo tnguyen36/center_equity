@@ -11,6 +11,7 @@ var crypto = require("crypto");
 var environmentVariables = require("dotenv").config();
 var { google } = require("googleapis");
 var OAuth2 = google.auth.OAuth2;
+var moment = require("moment");
 
 
 
@@ -92,51 +93,50 @@ app.post("/forgot", function(req, res, next) {
 		        done(err, token);
       });
     },
-	    function(token, done) {
-	    	User.findOne({ username: req.body.email}, function(err, user) {
-					if(err || !user) {
-						return res.redirect("/forgot");
-					}
-					user.resetPasswordToken = token;
-					user.resetPasswordExpires = Date.now() + 3600000;
+    function(token, done) {
+    	User.findOne({ username: req.body.email}, function(err, user) {
+			if(!user) {
+				return res.redirect("/forgot");
+			}
+			user.resetPasswordToken = token;
+			user.resetPasswordExpires = moment().add(1,"hour");
 
-					user.save(function(err) {
-						done(err, token, user);
-					});
+			user.save(function(err) {
+				done(err, token, user);
 			});
+		});
     },
-		function(token, user, done) {
-			var smtpTransport = nodemailer.createTransport({
-				service: "Gmail",
-				host: "smtp.gmail.com",			
-				auth: {
-					type: "OAuth2",
-					user: process.env.MAIL_ACCOUNT,
-					clientId: process.env.CLIENT_ID,
-					clientSecret: process.env.CLIENT_SECRET,
-					refreshToken: process.env.REFRESH_TOKEN,
-					accessToken:  process.env.ACCESS_TOKEN,
-				}
-			});
-			var mailOptions = {
-				to: user.username,
-				from: "Center Equity <" + process.env.MAIL_ACCOUNT + ">",
-				subject: "Password Reset",
-				text: "Please click on the following link below, or paste this into your browser to complete the process:\n\n" +
-					"http://" + req.headers.host + "/reset/" + token +  "\n\n" +
-					"If you did not request this, please ignore this email and your password will remain unchanged"
-			};
-			smtpTransport.sendMail(mailOptions, function(err) {
-				if (err) {
-					console.log(err);
-					return res.redirect("/");
-				}
-				console.log("mail sent");
-				console.log(err.message);
-				done(err, "done");
-			});
+	function(token, user, done) {
+		var smtpTransport = nodemailer.createTransport({
+			service: "Gmail",
+			host: "smtp.gmail.com",			
+			auth: {
+				type: "OAuth2",
+				user: process.env.MAIL_ACCOUNT,
+				clientId: process.env.CLIENT_ID,
+				clientSecret: process.env.CLIENT_SECRET,
+				refreshToken: process.env.REFRESH_TOKEN,
+				accessToken:  process.env.ACCESS_TOKEN,
+			}
+		});
+		var mailOptions = {
+			to: user.username,
+			from: "Center Equity <" + process.env.MAIL_ACCOUNT + ">",
+			subject: "Password Reset",
+			text: "Please click on the following link below, or paste this into your browser to complete the process:\n\n" +
+				"http://" + req.headers.host + "/reset/" + token +  "\n\n" +
+				"If you did not request this, please ignore this email and your password will remain unchanged"
+		};
+		smtpTransport.sendMail(mailOptions, function(err) {
+			if (err) {
+				console.log(err);
+				return res.redirect("/login");
+			}
+			console.log("mail sent");
+			done(err, "done");
+		});
 
-		}
+	}
 	], function(err) {
 		if (err) return next(err);
 		res.redirect("/forgot");
@@ -146,34 +146,36 @@ app.post("/forgot", function(req, res, next) {
 
 
 // Reset Email Link Route
-app.get("/reset/:token", function(req, res) {	
-	res.render("reset", {token: req.params.token});
-
+app.get("/reset/:token", function(req, res) {
+	User.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: moment() } }, function (err, user) {
+	    if (!user) {
+	      	return res.redirect('/forgot');
+	    }	
+		res.render("reset", {token: req.params.token});
+	});
 });
 
 app.post("/reset/:token", function(req, res, next) {
   async.waterfall([
-    function(done) {
-      User.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } }, function(err, user) {
-        if (!user) {
-          return res.redirect('back');
-        }
-        if(req.body.password === req.body.confirm) {
-          user.setPassword(req.body.password, function(err) {
-            user.resetPasswordToken = undefined;
-            user.resetPasswordExpires = undefined;
+	    function(done) {
+	      	User.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: moment() } }, function(err, user) {
+	        	if (!user) {
+	          		return res.redirect('/forgot');
+	        	}
+	        	if(req.body.password === req.body.confirm) {
+	          		user.setPassword(req.body.password, function(err) {
+	            		user.resetPasswordToken = undefined;
+	            		user.resetPasswordExpires = undefined;
 
-            user.save(function(err) {
-              req.logIn(user, function(err) {
-                done(err, user);
-              });
-            });
-          })
-        } else {
-            return res.redirect('back');
-        }
-      });
-    }
+	            		user.save(function(err) {
+	               			done(err, user);
+	            		});
+	          		});
+	        	} else {
+	           		return res.redirect('/login');
+	        	}
+	      	});
+    	}
     // function(user, done) {
     //   var smtpTransport = nodemailer.createTransport({
     //     service: 'Gmail', 
@@ -195,7 +197,7 @@ app.post("/reset/:token", function(req, res, next) {
     // }
   ], function(err) {
     if (err) return next(err);
-    res.redirect("/login");
+    res.redirect("/");
   });
 });
 
