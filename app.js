@@ -94,7 +94,7 @@ app.post("/forgot", function(req, res, next) {
     },
 	    function(token, done) {
 	    	User.findOne({ username: req.body.email}, function(err, user) {
-					if(!user) {
+					if(err || !user) {
 						return res.redirect("/forgot");
 					}
 					user.resetPasswordToken = token;
@@ -106,13 +106,9 @@ app.post("/forgot", function(req, res, next) {
 			});
     },
 		function(token, user, done) {
-			var oauth2Client = new OAuth2(
-				process.env.CLIENT_ID,
-				process.env.CLIENT_SECRET, // Client Secret
-				process.env.REDIRECT_URL // Redirect URL
-			);
 			var smtpTransport = nodemailer.createTransport({
-				service: "gmail",
+				service: "Gmail",
+				host: "smtp.gmail.com",			
 				auth: {
 					type: "OAuth2",
 					user: process.env.MAIL_ACCOUNT,
@@ -120,7 +116,6 @@ app.post("/forgot", function(req, res, next) {
 					clientSecret: process.env.CLIENT_SECRET,
 					refreshToken: process.env.REFRESH_TOKEN,
 					accessToken:  process.env.ACCESS_TOKEN,
-					expires: 1484314697598
 				}
 			});
 			var mailOptions = {
@@ -132,7 +127,12 @@ app.post("/forgot", function(req, res, next) {
 					"If you did not request this, please ignore this email and your password will remain unchanged"
 			};
 			smtpTransport.sendMail(mailOptions, function(err) {
+				if (err) {
+					console.log(err);
+					return res.redirect("/");
+				}
 				console.log("mail sent");
+				console.log(err.message);
 				done(err, "done");
 			});
 
@@ -147,11 +147,11 @@ app.post("/forgot", function(req, res, next) {
 
 // Reset Email Link Route
 app.get("/reset/:token", function(req, res) {	
-	res.render("reset");
+	res.render("reset", {token: req.params.token});
 
 });
 
-app.post('/reset', function(req, res, next) {
+app.post("/reset/:token", function(req, res, next) {
   async.waterfall([
     function(done) {
       User.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } }, function(err, user) {
@@ -200,6 +200,6 @@ app.post('/reset', function(req, res, next) {
 });
 
 // http request listener
-app.listen(process.env.PORT, process.env.IP, function() {
+app.listen(3000, function() {
 	console.log("Server has started!");
 });
