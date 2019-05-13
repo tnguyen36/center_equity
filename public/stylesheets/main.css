@@ -1,4 +1,133 @@
 body {
-	color: blue;
-	font-size: 18px;		
+	color:white;
+	font-size: 18px;	
+	background: url("/images/daisy.jpg"); 	
 }
+
+.text-field {
+	color: white;
+}
+
+.form-header {
+	margin-top: 20px;
+}
+
+.forgot-dialog {
+	max-width: 580px;
+}
+
+.register-dialog {
+	max-width: 600px;
+}
+
+.register-dialog .main-section {
+	margin-top: 70px;
+}
+
+
+.main-section {
+	margin: 0 auto;
+	margin-top: 130px;
+	padding: 0;
+}
+
+.modal-content {
+	background: rgba(0,0,0,0.5);
+	padding: 0 18px;
+	border-radius: 10px;
+}
+
+.user-img img {
+	height: 120px;
+	width: 120px;
+	border-radius: 50%;
+}
+
+.user-img {
+	margin-top: -60px;
+	margin-bottom: 45px;
+}
+
+.form-group {
+	margin-bottom: 25px;
+}
+
+.form-group input {
+	height: 42px;
+	background: transparent;
+	border: none;
+	border-bottom: 3px solid #85754d;
+	font-size: 18px;
+	letter-spacing: 2px;
+	padding-left: 54px;
+	color: #85754d;
+}
+
+.form-group input:focus {
+	background: transparent;
+	border-color: white;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    -moz-box-shadow: none;
+    color:#fff;
+ }
+
+.login-email::before {
+	font-family: 'Font Awesome 5 Free';
+	content: "\f1fa";
+	font-weight: 900;
+	position: absolute;
+	font-size: 22px;
+	left: 28px;
+	padding-top: 40px;
+	color: white;
+}
+
+.login-password::before {
+	content: "\f023";
+	font-family: 'Font Awesome 5 Free';
+	font-weight: 900;
+	position: absolute;
+	font-size: 22px;
+	left: 28px;
+	padding-top: 40px;
+	color: white;
+}
+
+.login-user::before {
+	content: "\f2c2";
+	font-family: 'Font Awesome 5 Free';
+	font-weight: 900;
+	position: absolute;
+	font-size: 22px;
+	left: 28px;
+	padding-top: 40px;
+	color: white;
+}
+
+.form-input button {
+	width: 40%;
+	margin: 5px 0 25px;
+}
+
+.btn-secondary {
+	background-color: #4b2e83;
+	font-size: 19px;
+	border-radius: 5px;
+	padding: 7px 14px;
+	border: 1px solid #daf1ff;
+}
+
+.btn-secondary:hover {
+	background-color: #b7a57a;
+	border: 1px solid #daf1ff;
+}
+
+.forgot {
+	padding: 5px 0 25px;
+}
+
+.forgot a, .register a, .register, .login, .login a {
+	color: #daf1ff;
+}
+

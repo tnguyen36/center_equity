@@ -1,21 +1,23 @@
 <% include partials/header %>
-<div class="container">
+<div class="modal-dialog forgot-dialog text-center">
 	<div class="row">
-		<div class="col-lg-12">
-			<form action="/reset/<%= token %>" method="POST">
-				<legend>Reset Password</legend>
-				<div class="form-group">
-					<label for="password">New Password</label>
-					<input type="password" name="password" autofocus class="form-control">
+		<div class="col-sm-12 main-section">
+			<div class="modal-content">
+				<div class="col-12 form-input">
+					<legend class="text-field form-header"><strong>Reset Password</strong></legend>
+					<form id="validate-form"> action="/reset/<%= token %>" method="POST">						
+						<div class="form-group text-left login-password">
+							<label for="password" class="text-field">New Password</label>
+							<input type="password" name="password" autofocus class="form-control" placeholder="Enter New Password" required>
+						</div>
+						<div class="form-group text-left login-password">
+							<label for="password2" class="text-field">Confirm Password</label>
+							<input type="password" name="password2" autofocus class="form-control" placeholder="Confirm Password" required>
+						</div>
+						<button class="btn btn-secondary">Update Password</button>
+					</form>
 				</div>
-				<div class="form-group">
-					<label for="confirm">Confirm Password</label>
-					<input type="password" name="confirm" autofocus class="form-control">
-				</div>
-				<div class="form-group">
-					<input type="submit" class="btn btn-primary" value="Update Password">
-				</div>
-			</form>
+			</div>
 		</div>
 	</div>
 </div>

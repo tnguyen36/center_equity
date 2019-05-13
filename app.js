@@ -12,8 +12,7 @@ var environmentVariables = require("dotenv").config();
 var { google } = require("googleapis");
 var OAuth2 = google.auth.OAuth2;
 var moment = require("moment");
-
-
+var flash = require("connect-flash");
 
 // Connect to database
 const databaseUri = process.env.MONGODB_URI || "mongodb://localhost:27017/center_equity";
@@ -25,6 +24,7 @@ mongoose.connect(databaseUri, {useNewUrlParser: true})
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(express.static(__dirname + "/public"));
+app.use(flash());
 
 // Session for storing data
 app.use(require("express-session")( {
@@ -39,6 +39,12 @@ app.use(passport.session());
 passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
+
+app.use(function(req, res, next) {
+	res.locals.error = req.flash("error");
+	res.locals.success = req.flash("success");
+	next();
+});
 
 
 // Root Route
@@ -59,9 +65,10 @@ app.post("/register", function(req, res) {
 	User.register(newUser, req.body.password, function(err, user) {
 		if (err) {
 			console.log(err);
-			return res.render("register");
+			return res.render("register", {error: err.message});
 		}
 		passport.authenticate("local")(req, res, function() {
+			req.flash("success", "You have successfuly registered");
 			res.redirect("/");
 		});
 	});
@@ -75,7 +82,8 @@ app.get("/login", function(req, res) {
 app.post("/login", passport.authenticate("local", 
 	{
 		successRedirect: "/",
-		failureRedirect: "/login"
+		failureRedirect: "/login",
+		failureFlash: true
 	}), function(req, res) {
 
 });
@@ -96,6 +104,7 @@ app.post("/forgot", function(req, res, next) {
     function(token, done) {
     	User.findOne({ username: req.body.email}, function(err, user) {
 			if(!user) {
+				req.flash("error", "Emaill does not exist");
 				return res.redirect("/forgot");
 			}
 			user.resetPasswordToken = token;
@@ -130,6 +139,7 @@ app.post("/forgot", function(req, res, next) {
 		smtpTransport.sendMail(mailOptions, function(err) {
 			if (err) {
 				console.log(err);
+				req.flash("error", "Failed to send reset link to your email");
 				return res.redirect("/login");
 			}
 			console.log("mail sent");
@@ -139,6 +149,7 @@ app.post("/forgot", function(req, res, next) {
 	}
 	], function(err) {
 		if (err) return next(err);
+		req.flash("success", "A link has been sent to your email for further instructions");
 		res.redirect("/forgot");
 	});
 });
@@ -149,6 +160,7 @@ app.post("/forgot", function(req, res, next) {
 app.get("/reset/:token", function(req, res) {
 	User.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: moment() } }, function (err, user) {
 	    if (!user) {
+	    	req.flash("error", "link is invalid or has expired");
 	      	return res.redirect('/forgot');
 	    }	
 		res.render("reset", {token: req.params.token});
@@ -160,9 +172,10 @@ app.post("/reset/:token", function(req, res, next) {
 	    function(done) {
 	      	User.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: moment() } }, function(err, user) {
 	        	if (!user) {
+	        		req.flash("error", "link is invalid or has expired");
 	          		return res.redirect('/forgot');
 	        	}
-	        	if(req.body.password === req.body.confirm) {
+	        	if(req.body.password === req.body.password2) {
 	          		user.setPassword(req.body.password, function(err) {
 	            		user.resetPasswordToken = undefined;
 	            		user.resetPasswordExpires = undefined;
@@ -172,7 +185,8 @@ app.post("/reset/:token", function(req, res, next) {
 	            		});
 	          		});
 	        	} else {
-	           		return res.redirect('/login');
+	        		req.flash("error", "Passwords do not match");
+	           		return res.redirect("/reset/" + user.resetPasswordToken);
 	        	}
 	      	});
     	}
@@ -197,11 +211,12 @@ app.post("/reset/:token", function(req, res, next) {
     // }
   ], function(err) {
     if (err) return next(err);
+    req.flash("success", "Password reset is complete");
     res.redirect("/");
   });
 });
 
 // http request listener
-app.listen(process.env.PORT, process.env.IP, function() {
+app.listen(3000, function() {
 	console.log("Server has started!");
 });

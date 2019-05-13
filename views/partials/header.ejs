@@ -4,6 +4,8 @@
 	<meta charset = "utf-8">
 	<title>The Center of Equity and Inclusion</title>	
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
+	<script defer src="https://use.fontawesome.com/releases/v5.8.2/js/all.js" integrity="sha384-DJ25uNYET2XCl5ZF++U8eNxPWqcKohUUBUpKGlNLMchM7q4Wjg2CUpjHLaL8yYPH" crossorigin="anonymous"></script>
 	<link rel="stylesheet" type="text/css" href="/stylesheets/main.css">
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 	<script>
@@ -17,4 +19,13 @@
 <body>
 	Today's Date: <script>printToday();</script>
 	<a href = "/">Homepage</a>
+	<div class="container">	
+			<% if(error && error.length > 0) { %>
+				<div class="alert alert-danger" role="alert"><%= error %></div>
+			<% } %>
+			<% if(success && success.length > 0) { %>
+				<div class="alert alert-success" role="alert"><%= success %></div>
+			<% } %>
+	</div>
 
+	
