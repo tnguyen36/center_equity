@@ -1,8 +1,16 @@
 body {
-	color:white;
-	font-size: 18px;	
-	background: url("/images/daisy.jpg"); 	
+	color:white;	
+	background: url("/images/daisy.jpg") no-repeat center center fixed;
+	background-size: cover; 	
 }
+
+.jumbotron {
+	margin-top: 20vh;
+	color: #4b2e83;
+	background-color: rgba(233,236,239,0.6);
+	font-weight: 700;
+}
+
 
 .text-field {
 	color: white;
@@ -32,7 +40,7 @@ body {
 }
 
 .modal-content {
-	background: rgba(0,0,0,0.5);
+	background: rgba(0,0,0,0.6);
 	padding: 0 18px;
 	border-radius: 10px;
 }
@@ -100,7 +108,18 @@ body {
 	font-weight: 900;
 	position: absolute;
 	font-size: 22px;
-	left: 28px;
+	left: 20px;
+	padding-top: 40px;
+	color: white;
+}
+
+.register-password::before {
+	content: "\f023";
+	font-family: 'Font Awesome 5 Free';
+	font-weight: 900;
+	position: absolute;
+	font-size: 22px;
+	left: 20px;
 	padding-top: 40px;
 	color: white;
 }
@@ -121,6 +140,16 @@ body {
 .btn-secondary:hover {
 	background-color: #b7a57a;
 	border: 1px solid #daf1ff;
+}
+
+.btn-outline-success {
+	color: #4b2e83;
+	border-color: #4b2e83;
+}
+
+.btn-outline-success:hover {
+	background-color: #4b2e83;
+	color: white;
 }
 
 .forgot {
