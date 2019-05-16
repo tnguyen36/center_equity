@@ -32,6 +32,9 @@ body {
 	margin-top: 70px;
 }
 
+.main-section.login-section {
+	margin-top: 100px;
+}
 
 .main-section {
 	margin: 0 auto;
