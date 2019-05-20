@@ -6,11 +6,18 @@ var UserSchema = new mongoose.Schema({
 	lastName: String,
 	username: {type: String, unique: true},
 	rank: String,
-	reason: String,
 	password: String,
 	subscribe: String,
     resetPasswordToken: String,
-    resetPasswordExpires: Date
+    resetPasswordExpires: Date,
+    userSince: Date,
+    lastLogin: Date,
+    reasons: [
+    	{
+    		type: mongoose.Schema.Types.ObjectId,
+			ref: "Reason"
+    	}
+    ]
 });
 
 UserSchema.plugin(passportLocalMongoose);

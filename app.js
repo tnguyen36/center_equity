@@ -5,6 +5,7 @@ var bodyParser = require("body-parser");
 var passport = require("passport");
 var LocalStrategy = require("passport-local");
 var User = require("./models/user");
+var Reason = require("./models/reason");
 var async = require("async");
 var nodemailer = require("nodemailer");
 var crypto = require("crypto");
@@ -43,6 +44,7 @@ passport.deserializeUser(User.deserializeUser());
 app.use(function(req, res, next) {
 	res.locals.error = req.flash("error");
 	res.locals.success = req.flash("success");
+	res.locals.moment = moment;
 	next();
 });
 
@@ -61,12 +63,23 @@ app.get("/register", function(req, res) {
 });
 
 app.post("/register", function(req, res) {
-	var newUser = new User({firstName: req.body.firstName, lastName: req.body.lastName, username: req.body.username, rank: req.body.rank, reason: req.body.reason, subscribe: req.body.subscribe});
+	var newUser = new User({firstName: req.body.firstName, lastName: req.body.lastName, username: req.body.username, rank: req.body.rank, subscribe: req.body.subscribe, userSince: moment(), lastLogin: moment()});
 	User.register(newUser, req.body.password, function(err, user) {
 		if (err) {
 			console.log(err);
 			return res.render("register", {error: err.message});
 		}
+		Reason.create(req.body.purpose, function(err, reason) {
+			if (err) {
+				console.log(err);
+			} else {
+				reason.author.id = user._id;
+				reason.author.username = req.body.username;
+				reason.save();
+				user.reasons.push(reason);
+				user.save();
+			}
+		});
 		passport.authenticate("local")(req, res, function() {
 			req.flash("success", "You have successfuly registered");
 			res.redirect("/");
@@ -79,14 +92,63 @@ app.get("/login", function(req, res) {
 	res.render("login");
 });
 
-app.post("/login", passport.authenticate("local", 
-	{
-		successRedirect: "/",
-		failureRedirect: "/login",
-		failureFlash: true
-	}), function(req, res) {
-
+app.post('/login', function(req, res, next) {
+  passport.authenticate('local', function(err, user, info) {
+    if (err) { 
+    	return next(err); 
+    }
+    if (!user) { 
+    	req.flash("error", "Invalid email or password");
+    	return res.redirect('/login'); 
+    }
+    req.logIn(user, function(err) {
+    	if (err) { 
+    		return next(err); 
+    	} else {
+    		Reason.create(req.body.purpose, function(err, reason) {
+				if (err) {
+					console.log(err);
+				} else {
+					reason.author.id = user._id;
+					reason.author.username = req.body.username;
+					reason.save();
+					user.lastLogin = moment();
+					user.reasons.push(reason);
+					user.save();
+				}
+			});
+    	}
+     	return res.redirect('/');
+    });
+  })(req, res, next);
 });
+
+
+// app.post("/login", passport.authenticate("local", 
+// 	{
+// 		successRedirect: "/",
+// 		failureRedirect: "/login",
+// 		failureFlash: true
+// 	}), function(req, res) {
+// 		User.findOne({username: req.body.username}, function(err, user) {
+// 			if (err) {
+// 				console.log(err);
+// 			} else {
+// 				Reason.create(req.body.purpose, function(err, reason) {
+// 					if (err) {
+// 						req.flash("error", "Cannot save Reason");
+// 						console.log(err);
+// 					} else {
+// 						reason.author.id = user._id;
+// 						reason.author.username = req.body.username;
+// 						reason.save();
+// 						user.reasons.push(reason);
+// 						user.save();
+// 					}
+// 				});
+// 			}
+// 		});
+// });
 
 // Forgot Password Route
 app.get("/forgot", function(req, res) {
@@ -214,6 +276,51 @@ app.post("/reset/:token", function(req, res, next) {
     req.flash("success", "Password reset is complete");
     res.redirect("/");
   });
+});
+
+app.get("/stats", function(req, res) {
+	async.waterfall([
+		function(callback) {
+			Reason.aggregate([{$group: {_id:"$text", total: {"$sum":1}}}], function(err, reasons) {
+				callback(null, reasons);
+			});
+		},
+		function(reasons, callback) {
+			User.aggregate([{$group: {_id:"$rank", total: {"$sum":1}}}], function(err, ranks) {
+				callback(null, reasons, ranks);
+			});
+		},
+		function(reasons, ranks, callback) {
+			User.aggregate([{$group: {_id:"$subscribe", total: {"$sum":1}}}], function(err, subscribe) {
+				callback(null, reasons, ranks, subscribe);
+			});
+		},
+		function(reasons, ranks, subscribe, callback) {
+			User.find({lastLogin: {$gte: moment().startOf("day"), $lt: moment().endOf("day")}}, function(err, users) {
+				callback(null, reasons, ranks, subscribe, users);
+			});
+		},
+		function(reasons, ranks, subscribe, users, callback) {
+			User.find({userSince: {$gte: moment().startOf("day"), $lt: moment().endOf("day")}}, function(err, newUsers) {
+				callback(null, reasons, ranks, subscribe, users, newUsers);
+			});
+		},
+		function(reasons, ranks, subscribe, users, newUsers, callback) {
+			User.find({}, function(err, userList) {
+				callback(null, reasons, ranks, subscribe, users, newUsers, userList);
+			}).collation({locale: "en"}).sort({firstName:1});
+		}
+	], function(err, reasons, ranks, subscribe, users, newUsers, userList) {
+		if (err) return next(err);
+			const userSum = ranks.reduce(function(sum, rank){
+			  return sum + rank.total;
+			}, 0);
+			const loginSum = reasons.reduce(function(sum, reason){
+			  return sum + reason.total;
+			}, 0);
+			res.render("stats", {reasons: reasons, ranks: ranks, subscribe: subscribe, userSum: userSum, loginSum: loginSum, users: users, newUsers: newUsers, userList: userList});
+
+	});
 });
 
 // http request listener

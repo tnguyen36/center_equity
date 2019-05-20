@@ -1,7 +1,32 @@
 body {
 	color:white;	
 	background: url("/images/daisy.jpg") no-repeat center center fixed;
-	background-size: cover; 	
+	background-size: cover;
+	font-family:  'Slabo 40px', serif;
+}
+
+.table {
+	background-color: white;
+}
+
+#bootstrap-override .table .thead-dark th{
+	background-color: #4b2e83;
+}
+
+tr {
+	background-color: white;
+}
+
+td:nth-child(1), td:nth-child(2), td:nth-child(5) {
+   text-transform: capitalize;
+}
+
+.table-hover tbody tr:hover td {
+	background-color: rgba(75, 46, 131,0.2);
+}
+
+.user-table {
+	margin: 0 auto;
 }
 
 .jumbotron {
@@ -163,3 +188,15 @@ body {
 	color: #daf1ff;
 }
 
+.totalCounts {
+	color: #4b2e83;
+}
+
+.transparent-background {
+	background-color: rgba(233,236,239,0.6);
+
+}
+
+.stat-text {
+	font-size: 2.0rem;
+}
