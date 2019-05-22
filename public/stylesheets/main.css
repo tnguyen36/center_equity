@@ -13,6 +13,10 @@ body {
 	background-color: #4b2e83;
 }
 
+.modal-header {
+	display: block;
+}
+
 tr {
 	background-color: white;
 }
@@ -69,6 +73,13 @@ td:nth-child(1), td:nth-child(2), td:nth-child(5) {
 
 .modal-content {
 	background: rgba(0,0,0,0.6);
+	padding: 0 18px;
+	border-radius: 10px;
+}
+
+#myModal .modal-content, #deleteModal {
+	background: white;
+	color: #4b2e83;
 	padding: 0 18px;
 	border-radius: 10px;
 }

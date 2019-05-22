@@ -14,6 +14,7 @@ var { google } = require("googleapis");
 var OAuth2 = google.auth.OAuth2;
 var moment = require("moment");
 var flash = require("connect-flash");
+var methodOverride = require("method-override");
 
 // Connect to database
 const databaseUri = process.env.MONGODB_URI || "mongodb://localhost:27017/center_equity";
@@ -25,6 +26,7 @@ mongoose.connect(databaseUri, {useNewUrlParser: true})
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(express.static(__dirname + "/public"));
+app.use(methodOverride('_method'));
 app.use(flash());
 
 // Session for storing data
@@ -309,8 +311,13 @@ app.get("/stats", function(req, res) {
 			User.find({}, function(err, userList) {
 				callback(null, reasons, ranks, subscribe, users, newUsers, userList);
 			}).collation({locale: "en"}).sort({firstName:1});
+		},
+		function(reasons, ranks, subscribe, users, newUsers, userList, callback) {
+			User.find({subscribe: {$eq: "yes"}}, function(err, subscribers) {
+				callback(null, reasons, ranks, subscribe, users, newUsers, userList, subscribers);
+			});
 		}
-	], function(err, reasons, ranks, subscribe, users, newUsers, userList) {
+	], function(err, reasons, ranks, subscribe, users, newUsers, userList, subscribers) {
 		if (err) return next(err);
 			const userSum = ranks.reduce(function(sum, rank){
 			  return sum + rank.total;
@@ -318,12 +325,45 @@ app.get("/stats", function(req, res) {
 			const loginSum = reasons.reduce(function(sum, reason){
 			  return sum + reason.total;
 			}, 0);
-			res.render("stats", {reasons: reasons, ranks: ranks, subscribe: subscribe, userSum: userSum, loginSum: loginSum, users: users, newUsers: newUsers, userList: userList});
+			res.render("stats", {reasons: reasons, ranks: ranks, subscribe: subscribe, userSum: userSum, loginSum: loginSum, users: users, newUsers: newUsers, userList: userList, subscribers: subscribers});
+
 
 	});
 });
 
+// Delete all Users and their reasons 
+app.delete("/deleteUsers", function(req, res) {
+	async.waterfall([
+		function(callback) {
+			User.remove({}, function(err, deletedUsers) {
+				callback(null);
+			});
+		},
+		function(callback) {
+			Reason.remove({}, function(err, deletedReasons) {
+				callback(null);
+			});
+		}
+		], function(err) {
+			res.redirect("/stats");
+	});
+});
+
+// Ajax call for getting subscriber list
+app.get("/subscribers", function(req, res) {
+	User.find({subscribe: {$eq: "yes"}}, function(err, subscribers) {
+		if (err) {
+			console.log(err);
+		} else {
+			const emails = subscribers.reduce(function(sum, user) {
+				return sum + user.username + ";";
+			}, "");
+			res.json(emails);
+		}
+	});
+})
+
 // http request listener
-app.listen(process.env.PORT, process.env.IP, function() {
+app.listen(3000, function() {
 	console.log("Server has started!");
 });
