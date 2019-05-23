@@ -15,6 +15,7 @@ var OAuth2 = google.auth.OAuth2;
 var moment = require("moment");
 var flash = require("connect-flash");
 var methodOverride = require("method-override");
+var middleware = require("./middleware");
 
 // Connect to database
 const databaseUri = process.env.MONGODB_URI || "mongodb://localhost:27017/center_equity";
@@ -84,6 +85,7 @@ app.post("/register", function(req, res) {
 		});
 		passport.authenticate("local")(req, res, function() {
 			req.flash("success", "You have successfuly registered");
+			req.logout();
 			res.redirect("/");
 		});
 	});
@@ -106,6 +108,8 @@ app.post('/login', function(req, res, next) {
     req.logIn(user, function(err) {
     	if (err) { 
     		return next(err); 
+    	} else if (user.rank === "Admin") {
+    		return res.redirect("/stats");
     	} else {
     		Reason.create(req.body.purpose, function(err, reason) {
 				if (err) {
@@ -119,8 +123,10 @@ app.post('/login', function(req, res, next) {
 					user.save();
 				}
 			});
+			req.logout();
+     		return res.redirect('/');
     	}
-     	return res.redirect('/');
+    	
     });
   })(req, res, next);
 });
@@ -280,7 +286,7 @@ app.post("/reset/:token", function(req, res, next) {
   });
 });
 
-app.get("/stats", function(req, res) {
+app.get("/stats", middleware.isAdmin, function(req, res) {
 	async.waterfall([
 		function(callback) {
 			Reason.aggregate([{$group: {_id:"$text", total: {"$sum":1}}}], function(err, reasons) {
@@ -350,7 +356,7 @@ app.delete("/deleteUsers", function(req, res) {
 });
 
 // Ajax call for getting subscriber list
-app.get("/subscribers", function(req, res) {
+app.get("/subscribers", middleware.isAdmin, function(req, res) {
 	User.find({subscribe: {$eq: "yes"}, rank: {$ne: "Admin"}}, function(err, subscribers) {
 		if (err) {
 			console.log(err);
@@ -364,6 +370,6 @@ app.get("/subscribers", function(req, res) {
 })
 
 // http request listener
-app.listen(process.env.PORT,process.env.IP, function() {
+app.listen(process.env.PORT, process.env.IP, function() {
 	console.log("Server has started!");
 });

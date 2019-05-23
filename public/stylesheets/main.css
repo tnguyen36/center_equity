@@ -5,6 +5,20 @@ body {
 	font-family:  'Slabo 40px', serif;
 }
 
+.dataTables_wrapper {
+	margin-top: -39px;
+}
+
+.dataTables_wrapper .dataTables_length {
+	padding-left: 15px;
+	font-weight: bold;
+}
+
+.dataTables_wrapper .dataTables_filter {
+	padding-right: 15px;
+	font-weight: bold;
+}
+
 .table {
 	background-color: white;
 }
