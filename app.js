@@ -288,32 +288,32 @@ app.get("/stats", function(req, res) {
 			});
 		},
 		function(reasons, callback) {
-			User.aggregate([{$group: {_id:"$rank", total: {"$sum":1}}}], function(err, ranks) {
+			User.aggregate([{$match: {rank: {$not:{$eq: "Admin"}}}},{$group: {_id:"$rank", total: {"$sum":1}}}], function(err, ranks) {
 				callback(null, reasons, ranks);
 			});
 		},
 		function(reasons, ranks, callback) {
-			User.aggregate([{$group: {_id:"$subscribe", total: {"$sum":1}}}], function(err, subscribe) {
+			User.aggregate([{$match: {rank: {$not:{$eq: "Admin"}}}},{$group: {_id:"$subscribe", total: {"$sum":1}}}], function(err, subscribe) {
 				callback(null, reasons, ranks, subscribe);
 			});
 		},
 		function(reasons, ranks, subscribe, callback) {
-			User.find({lastLogin: {$gte: moment().startOf("day"), $lt: moment().endOf("day")}}, function(err, users) {
+			User.find({lastLogin: {$gte: moment().startOf("day"), $lt: moment().endOf("day")},rank: {$ne: "Admin"}}, function(err, users) {
 				callback(null, reasons, ranks, subscribe, users);
 			});
 		},
 		function(reasons, ranks, subscribe, users, callback) {
-			User.find({userSince: {$gte: moment().startOf("day"), $lt: moment().endOf("day")}}, function(err, newUsers) {
+			User.find({userSince: {$gte: moment().startOf("day"), $lt: moment().endOf("day")},rank: {$ne: "Admin"}}, function(err, newUsers) {
 				callback(null, reasons, ranks, subscribe, users, newUsers);
 			});
 		},
 		function(reasons, ranks, subscribe, users, newUsers, callback) {
-			User.find({}, function(err, userList) {
+			User.find({rank: {$ne: "Admin"}}, function(err, userList) {
 				callback(null, reasons, ranks, subscribe, users, newUsers, userList);
 			}).collation({locale: "en"}).sort({firstName:1});
 		},
 		function(reasons, ranks, subscribe, users, newUsers, userList, callback) {
-			User.find({subscribe: {$eq: "yes"}}, function(err, subscribers) {
+			User.find({subscribe: {$eq: "yes"},rank: {$ne: "Admin"}}, function(err, subscribers) {
 				callback(null, reasons, ranks, subscribe, users, newUsers, userList, subscribers);
 			});
 		}
@@ -335,7 +335,7 @@ app.get("/stats", function(req, res) {
 app.delete("/deleteUsers", function(req, res) {
 	async.waterfall([
 		function(callback) {
-			User.remove({}, function(err, deletedUsers) {
+			User.remove({rank: {$ne: "Admin"}}, function(err, deletedUsers) {
 				callback(null);
 			});
 		},
@@ -351,7 +351,7 @@ app.delete("/deleteUsers", function(req, res) {
 
 // Ajax call for getting subscriber list
 app.get("/subscribers", function(req, res) {
-	User.find({subscribe: {$eq: "yes"}}, function(err, subscribers) {
+	User.find({subscribe: {$eq: "yes"}, rank: {$ne: "Admin"}}, function(err, subscribers) {
 		if (err) {
 			console.log(err);
 		} else {
@@ -364,6 +364,6 @@ app.get("/subscribers", function(req, res) {
 })
 
 // http request listener
-app.listen(process.env.PORT, process.env.IP, function() {
+app.listen(3000, function() {
 	console.log("Server has started!");
 });
