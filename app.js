@@ -131,6 +131,13 @@ app.post('/login', function(req, res, next) {
   })(req, res, next);
 });
 
+// Logout route
+app.get("/logout", function(req, res) {
+	req.logout();
+	req.flash("success", "Logged out successfuly");
+	res.redirect("/");
+});
+
 
 // app.post("/login", passport.authenticate("local", 
 // 	{
