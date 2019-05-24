@@ -16,6 +16,7 @@ var moment = require("moment");
 var flash = require("connect-flash");
 var methodOverride = require("method-override");
 var middleware = require("./middleware");
+var tz = require("moment-timezone");
 
 // Connect to database
 const databaseUri = process.env.MONGODB_URI || "mongodb://localhost:27017/center_equity";
@@ -66,7 +67,11 @@ app.get("/register", function(req, res) {
 });
 
 app.post("/register", function(req, res) {
-	var newUser = new User({firstName: req.body.firstName, lastName: req.body.lastName, username: req.body.username, rank: req.body.rank, subscribe: req.body.subscribe, userSince: moment(), lastLogin: moment()});
+	var lastLogin = {
+		time: moment(),
+		attempts: 1
+	}
+	var newUser = new User({firstName: req.body.firstName, lastName: req.body.lastName, username: req.body.username, rank: req.body.rank, subscribe: req.body.subscribe, userSince: moment(), lastLogin: lastLogin});
 	User.register(newUser, req.body.password, function(err, user) {
 		if (err) {
 			console.log(err);
@@ -118,7 +123,13 @@ app.post('/login', function(req, res, next) {
 					reason.author.id = user._id;
 					reason.author.username = req.body.username;
 					reason.save();
-					user.lastLogin = moment();
+					if (user.lastLogin.time > moment().startOf("day").add(7, "hours") && user.lastLogin.time < moment().endOf("day").add(7, "hours")) {
+						user.lastLogin.attempts += 1;
+					} else {
+						user.lastLogin.attempts = 0;
+					}
+					user.lastLogin.time = moment();
+
 					user.reasons.push(reason);
 					user.save();
 				}
@@ -210,8 +221,9 @@ app.post("/forgot", function(req, res, next) {
 			from: "Center Equity <" + process.env.MAIL_ACCOUNT + ">",
 			subject: "Password Reset",
 			text: "Please click on the following link below, or paste this into your browser to complete the process:\n\n" +
-				"http://" + req.headers.host + "/reset/" + token +  "\n\n" +
-				"If you did not request this, please ignore this email and your password will remain unchanged"
+				"http://" + req.headers.host + "/reset/" + token +  " --Reset Password\n" +
+				"http://" + req.headers.host + "/updateUser/" + token +  " -- Edit Account\n\n" +
+				"If you did not request this, please ignore this email and your account settings will remain unchanged"
 		};
 		smtpTransport.sendMail(mailOptions, function(err) {
 			if (err) {
@@ -230,8 +242,58 @@ app.post("/forgot", function(req, res, next) {
 		res.redirect("/forgot");
 	});
 });
-				
 
+// User Account Setting route				
+app.get("/updateUser/:token", function(req, res) {
+	User.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: moment() } }, function (err, user) {
+	    if (!user) {
+	    	req.flash("error", "link is invalid or has expired");
+	      	return res.redirect('/forgot');
+	    }	
+		res.render("updateUser", {token: req.params.token, user: user});
+	});
+})
+
+app.post("/updateUser/:token", function(req, res) {
+	async.waterfall([
+			function(done) {
+				User.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: moment() } }, function (err, user) {
+					if (!user) {
+						req.flash("error", "link is invalid or has expired");
+					  	return res.redirect('/forgot');
+					} else {
+					User.updateOne({_id: user._id}, {
+						firstName: req.body.firstName,
+						lastName: req.body.lastName,
+						username: req.body.username,
+						rank: req.body.rank,
+						subscribe: req.body.subscribe
+					}, function(err) {
+						if (err) {
+							console.log(err);
+							req.flash("error", "Email already taken");
+							return res.redirect("/updateUser/" + user.resetPasswordToken);
+						}
+						done(err, user);						
+					});
+				
+					}
+				});
+			},
+			function(user, done) {
+				user.resetPasswordToken = undefined;
+			    user.resetPasswordExpires = undefined;
+
+				user.save(function(err) {
+		   			done(err, user);
+				});
+			}
+		], function(err) {
+			if (err) return next(err);
+			req.flash("success", "Updated Account Successfully");
+			res.redirect("/");
+		});		
+});
 
 // Reset Email Link Route
 app.get("/reset/:token", function(req, res) {
@@ -311,12 +373,13 @@ app.get("/stats", middleware.isAdmin, function(req, res) {
 			});
 		},
 		function(reasons, ranks, subscribe, callback) {
-			User.find({lastLogin: {$gte: moment().startOf("day"), $lt: moment().endOf("day")},rank: {$ne: "Admin"}}, function(err, users) {
+			User.find({"lastLogin.time": {$gte: moment().startOf("day").add(7, "hours"), $lt: moment().endOf("day").add(7, "hours")},rank: {$ne: "Admin"}}, function(err, users) {
 				callback(null, reasons, ranks, subscribe, users);
 			});
 		},
 		function(reasons, ranks, subscribe, users, callback) {
-			User.find({userSince: {$gte: moment().startOf("day"), $lt: moment().endOf("day")},rank: {$ne: "Admin"}}, function(err, newUsers) {
+
+			User.find({userSince: {$gte: moment().startOf("day").add(7, "hours"), $lt: moment().endOf("day").add(7, "hours")},rank: {$ne: "Admin"}}, function(err, newUsers) {
 				callback(null, reasons, ranks, subscribe, users, newUsers);
 			});
 		},
@@ -338,7 +401,10 @@ app.get("/stats", middleware.isAdmin, function(req, res) {
 			const loginSum = reasons.reduce(function(sum, reason){
 			  return sum + reason.total;
 			}, 0);
-			res.render("stats", {reasons: reasons, ranks: ranks, subscribe: subscribe, userSum: userSum, loginSum: loginSum, users: users, newUsers: newUsers, userList: userList, subscribers: subscribers});
+			const dailyLoginSum = users.reduce(function(sum, user) {
+				return sum + user.lastLogin.attempts;
+			},0);
+			res.render("stats", {reasons: reasons, ranks: ranks, subscribe: subscribe, userSum: userSum, loginSum: loginSum, users: users, newUsers: newUsers, userList: userList, subscribers: subscribers, dailyLoginSum: dailyLoginSum});
 
 
 	});

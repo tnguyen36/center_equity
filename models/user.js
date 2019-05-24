@@ -12,7 +12,10 @@ var UserSchema = new mongoose.Schema({
     resetPasswordToken: String,
     resetPasswordExpires: Date,
     userSince: Date,
-    lastLogin: Date,
+    lastLogin: {
+    	time: Date,
+    	attempts: Number,
+    },
     reasons: [
     	{
     		type: mongoose.Schema.Types.ObjectId,
