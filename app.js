@@ -123,7 +123,7 @@ app.post('/login', function(req, res, next) {
 					reason.author.id = user._id;
 					reason.author.username = req.body.username;
 					reason.save();
-					if (user.lastLogin.time > moment().startOf("day").add(7, "hours") && user.lastLogin.time < moment().endOf("day").add(7, "hours")) {
+					if (user.lastLogin.time > moment().startOf("day") && user.lastLogin.time < moment().endOf("day")) {
 						user.lastLogin.attempts += 1;
 					} else {
 						user.lastLogin.attempts = 0;
