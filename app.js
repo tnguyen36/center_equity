@@ -68,10 +68,10 @@ app.get("/register", function(req, res) {
 
 app.post("/register", function(req, res) {
 	var lastLogin = {
-		time: moment().utc(),
+		time: moment(),
 		attempts: 1
 	}
-	var newUser = new User({firstName: req.body.firstName, lastName: req.body.lastName, username: req.body.username, rank: req.body.rank, subscribe: req.body.subscribe, userSince: moment().utc(), lastLogin: lastLogin});
+	var newUser = new User({firstName: req.body.firstName, lastName: req.body.lastName, username: req.body.username, rank: req.body.rank, subscribe: req.body.subscribe, userSince: moment(), lastLogin: lastLogin});
 	User.register(newUser, req.body.password, function(err, user) {
 		if (err) {
 			console.log(err);
@@ -124,12 +124,12 @@ app.post('/login', function(req, res, next) {
 					reason.author.username = req.body.username;
 					reason.save();
 
-					if (moment.utc(user.lastLogin.time) > moment().startOf("day").utc() && moment.utc() < moment().endOf("day").utc()) {
+					if (moment(user.lastLogin.time) > moment().startOf("day") && moment.utc() < moment().endOf("day")) {
 						user.lastLogin.attempts += 1;
 					} else  {
 						user.lastLogin.attempts = 1;
 					} 					
-					user.lastLogin.time = moment().utc();
+					user.lastLogin.time = moment();
 					
 					user.reasons.push(reason);
 					user.save();
@@ -374,14 +374,14 @@ app.get("/stats", middleware.isAdmin, function(req, res) {
 			});
 		},
 		function(reasons, ranks, subscribe, callback) {
-			User.find({"lastLogin.time": {$gt: moment().startOf("day").utc(), $lt: moment().endOf("day").utc()},rank: {$ne: "Admin"}}, function(err, users) {
+			User.find({"lastLogin.time": {$gt: moment().startOf("day"), $lt: moment().endOf("day")},rank: {$ne: "Admin"}}, function(err, users) {
 				console.log(users);
 				callback(null, reasons, ranks, subscribe, users);
 			});
 		},
 		function(reasons, ranks, subscribe, users, callback) {
 
-			User.find({userSince: {$gt: moment().startOf("day").utc(), $lt: moment().endOf("day").utc()},rank: {$ne: "Admin"}}, function(err, newUsers) {
+			User.find({userSince: {$gt: moment().startOf("day"), $lt: moment().endOf("day")},rank: {$ne: "Admin"}}, function(err, newUsers) {
 				console.log(newUsers);
 				callback(null, reasons, ranks, subscribe, users, newUsers);
 			});
