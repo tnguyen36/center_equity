@@ -68,10 +68,10 @@ app.get("/register", function(req, res) {
 
 app.post("/register", function(req, res) {
 	var lastLogin = {
-		time: moment(),
+		time: moment().utc(),
 		attempts: 1
 	}
-	var newUser = new User({firstName: req.body.firstName, lastName: req.body.lastName, username: req.body.username, rank: req.body.rank, subscribe: req.body.subscribe, userSince: moment(), lastLogin: lastLogin});
+	var newUser = new User({firstName: req.body.firstName, lastName: req.body.lastName, username: req.body.username, rank: req.body.rank, subscribe: req.body.subscribe, userSince: moment().utc(), lastLogin: lastLogin});
 	User.register(newUser, req.body.password, function(err, user) {
 		if (err) {
 			console.log(err);
@@ -123,13 +123,14 @@ app.post('/login', function(req, res, next) {
 					reason.author.id = user._id;
 					reason.author.username = req.body.username;
 					reason.save();
-					if (user.lastLogin.time > moment().startOf("day") && user.lastLogin.time < moment().endOf("day")) {
-						user.lastLogin.attempts += 1;
-					} else {
-						user.lastLogin.attempts = 0;
-					}
-					user.lastLogin.time = moment();
 
+					if (moment.utc(user.lastLogin.time) > moment().startOf("day").utc() && moment.utc(user.lastLogin.time) < moment().endOf("day").utc()) {
+						user.lastLogin.attempts += 1;
+					} else  {
+						user.lastLogin.attempts = 0;
+					} 					
+					user.lastLogin.time = moment().utc();
+					
 					user.reasons.push(reason);
 					user.save();
 				}
@@ -373,13 +374,13 @@ app.get("/stats", middleware.isAdmin, function(req, res) {
 			});
 		},
 		function(reasons, ranks, subscribe, callback) {
-			User.find({"lastLogin.time": {$gte: moment().startOf("day"), $lt: moment().endOf("day")},rank: {$ne: "Admin"}}, function(err, users) {
+			User.find({"lastLogin.time": {$gte: moment().startOf("day").utc(), $lt: moment().endOf("day").utc()},rank: {$ne: "Admin"}}, function(err, users) {
 				callback(null, reasons, ranks, subscribe, users);
 			});
 		},
 		function(reasons, ranks, subscribe, users, callback) {
 
-			User.find({userSince: {$gte: moment().startOf("day"), $lt: moment().endOf("day")},rank: {$ne: "Admin"}}, function(err, newUsers) {
+			User.find({"userSince": {$gte: moment().startOf("day").utc(), $lt: moment().endOf("day").utc()},rank: {$ne: "Admin"}}, function(err, newUsers) {
 				callback(null, reasons, ranks, subscribe, users, newUsers);
 			});
 		},
