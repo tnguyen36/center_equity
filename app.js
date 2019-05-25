@@ -381,7 +381,7 @@ app.get("/stats", middleware.isAdmin, function(req, res) {
 		},
 		function(reasons, ranks, subscribe, users, callback) {
 
-			User.find({"userSince": {$gte: moment().startOf("day").utc(), $lt: moment().endOf("day").utc()},rank: {$ne: "Admin"}}, function(err, newUsers) {
+			User.find({"userSince": {$gte: moment().startOf("day"), $lt: moment().endOf("day")},rank: {$ne: "Admin"}}, function(err, newUsers) {
 				console.log(newUsers);
 				callback(null, reasons, ranks, subscribe, users, newUsers);
 			});
