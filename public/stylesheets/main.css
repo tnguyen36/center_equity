@@ -5,6 +5,10 @@ body {
 	font-family:  'Slabo 40px', serif;
 }
 
+#emailList {
+	word-wrap: break-word;
+}
+
 .dataTables_wrapper {
 	margin-top: -39px;
 }
