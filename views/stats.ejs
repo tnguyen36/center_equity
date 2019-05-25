@@ -102,8 +102,8 @@
 				      <td><%= user.rank %></td>
 				      <td><%= user.subscribe %></td>
 				      <td><%= user.reasons.length %></td>
-				      <td><%= moment(user.userSince).format("MM/DD/YYYY") %></td>
-				      <td><%= moment(user.lastLogin).format("MM/DD/YYYY") %></td>
+				      <td><%= moment(user.userSince).tz('America/Los_Angeles').format("MM/DD/YYYY") %></td>
+				      <td><%= moment(user.lastLogin).tz('America/Los_Angeles').format("MM/DD/YYYY") %></td>
 			   	 	</tr>
 			  	<% });%>
 			  </tbody>

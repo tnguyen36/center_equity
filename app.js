@@ -405,7 +405,7 @@ app.get("/stats", middleware.isAdmin, function(req, res) {
 			const dailyLoginSum = users.reduce(function(sum, user) {
 				return sum + user.lastLogin.attempts;
 			},0);
-			res.render("stats", {reasons: reasons, ranks: ranks, subscribe: subscribe, userSum: userSum, loginSum: loginSum, users: users, newUsers: newUsers, userList: userList, subscribers: subscribers, dailyLoginSum: dailyLoginSum});
+			res.render("stats", {reasons: reasons, ranks: ranks, subscribe: subscribe, userSum: userSum, loginSum: loginSum, users: users, newUsers: newUsers, userList: userList, subscribers: subscribers, dailyLoginSum: dailyLoginSum, moment:moment, tz:tz});
 
 
 	});
