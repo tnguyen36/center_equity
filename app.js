@@ -374,14 +374,14 @@ app.get("/stats", middleware.isAdmin, function(req, res) {
 			});
 		},
 		function(reasons, ranks, subscribe, callback) {
-			User.find({"lastLogin.time": {$gte: moment().startOf("day").utc(), $lt: moment().endOf("day").utc()},rank: {$ne: "Admin"}}, function(err, users) {
+			User.find({"lastLogin.time": {$gt: moment().startOf("day").utc(), $lt: moment().endOf("day").utc()},rank: {$ne: "Admin"}}, function(err, users) {
 				console.log(users);
 				callback(null, reasons, ranks, subscribe, users);
 			});
 		},
 		function(reasons, ranks, subscribe, users, callback) {
 
-			User.find({userSince: {$gte: moment().startOf("day").utc(), $lt: moment().endOf("day").utc()},rank: {$ne: "Admin"}}, function(err, newUsers) {
+			User.find({userSince: {$gt: moment().startOf("day").utc(), $lt: moment().endOf("day").utc()},rank: {$ne: "Admin"}}, function(err, newUsers) {
 				console.log(newUsers);
 				callback(null, reasons, ranks, subscribe, users, newUsers);
 			});
