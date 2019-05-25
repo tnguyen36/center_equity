@@ -124,10 +124,10 @@ app.post('/login', function(req, res, next) {
 					reason.author.username = req.body.username;
 					reason.save();
 
-					if (moment.utc(user.lastLogin.time) > moment().startOf("day").utc() && moment.utc(user.lastLogin.time) < moment().endOf("day").utc()) {
+					if (moment.utc(user.lastLogin.time) > moment().startOf("day").utc() && moment.utc() < moment().endOf("day").utc()) {
 						user.lastLogin.attempts += 1;
 					} else  {
-						user.lastLogin.attempts = 0;
+						user.lastLogin.attempts = 1;
 					} 					
 					user.lastLogin.time = moment().utc();
 					
@@ -375,6 +375,7 @@ app.get("/stats", middleware.isAdmin, function(req, res) {
 		},
 		function(reasons, ranks, subscribe, callback) {
 			User.find({"lastLogin.time": {$gte: moment().startOf("day").utc(), $lt: moment().endOf("day").utc()},rank: {$ne: "Admin"}}, function(err, users) {
+				console.log(users);
 				callback(null, reasons, ranks, subscribe, users);
 			});
 		},
