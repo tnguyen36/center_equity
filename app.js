@@ -18,6 +18,9 @@ var methodOverride = require("method-override");
 var middleware = require("./middleware");
 var tz = require("moment-timezone");
 
+
+
+
 // Connect to database
 const databaseUri = process.env.MONGODB_URI || "mongodb://localhost:27017/center_equity";
 mongoose.connect(databaseUri, {useNewUrlParser: true})
@@ -373,15 +376,13 @@ app.get("/stats", middleware.isAdmin, function(req, res) {
 			});
 		},
 		function(reasons, ranks, subscribe, callback) {
-			User.find({"lastLogin.time": {$gt: moment().startOf("day"), $lt: moment().endOf("day")},rank: {$ne: "Admin"}}, function(err, users) {
-				console.log(users);
+			User.find({"lastLogin.time": {$gt: moment().startOf("day"), $lt: moment().endOf("day")},rank: {$ne: "Admin"}}, function(err, users) {				
 				callback(null, reasons, ranks, subscribe, users);
 			});
 		},
 		function(reasons, ranks, subscribe, users, callback) {
 
-			User.find({userSince: {$gt: moment().startOf("day"), $lt: moment().endOf("day")},rank: {$ne: "Admin"}}, function(err, newUsers) {
-				console.log(newUsers);
+			User.find({userSince: {$gt: moment().startOf("day"), $lt: moment().endOf("day")},rank: {$ne: "Admin"}}, function(err, newUsers) {				
 				callback(null, reasons, ranks, subscribe, users, newUsers);
 			});
 		},
@@ -442,7 +443,9 @@ app.get("/subscribers", middleware.isAdmin, function(req, res) {
 			res.json(emails);
 		}
 	});
-})
+});
+
+
 
 // http request listener
 app.listen(process.env.PORT, process.env.IP, function() {
