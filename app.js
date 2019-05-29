@@ -18,9 +18,6 @@ var methodOverride = require("method-override");
 var middleware = require("./middleware");
 var tz = require("moment-timezone");
 
-
-
-
 // Connect to database
 const databaseUri = process.env.MONGODB_URI || "mongodb://localhost:27017/center_equity";
 mongoose.connect(databaseUri, {useNewUrlParser: true})
@@ -148,7 +145,7 @@ app.post('/login', function(req, res, next) {
 // Logout route
 app.get("/logout", function(req, res) {
 	req.logout();
-	req.flash("success", "Logged out successfuly");
+	req.flash("success", "Logged out successfully");
 	res.redirect("/");
 });
 
@@ -387,9 +384,9 @@ app.get("/stats", middleware.isAdmin, function(req, res) {
 			});
 		},
 		function(reasons, ranks, subscribe, users, newUsers, callback) {
-			User.find({rank: {$ne: "Admin"}}, function(err, userList) {
+			User.find({rank: {$ne: "Admin"}}).populate("reasons").exec(function(err, userList) {
 				callback(null, reasons, ranks, subscribe, users, newUsers, userList);
-			}).collation({locale: "en"}).sort({firstName:1});
+			});
 		},
 		function(reasons, ranks, subscribe, users, newUsers, userList, callback) {
 			User.find({subscribe: {$eq: "yes"},rank: {$ne: "Admin"}}, function(err, subscribers) {

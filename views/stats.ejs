@@ -86,41 +86,55 @@
 			
 			
 			<div class="mt-3">
-			<input type="text" name="min" id="min" placeholder="From">
-			<input type="text" name="max" id="max" placeholder="To">
-			<p class="mb-0">Ex: 2/8/2013 09:30:26</p>
-			</div>
+				<div class= "dateTimeFilter">
+				
+				 <label for="exampleFormControlSelect1">Filter by: </label>
+			    <select class="mb-1" id="filterType">
+			      <option value="Joined Date">Joined Date</option>
+			      <option value="Recent Login">Recent Login</option>			  
+			    </select>
+			
+			
+			     <input type="text" name="min"  id="min" placeholder="From">
+				<input type="text"name="max" id="max" placeholder="To">
+				<p class="mb-0">Ex: 2/8/2013 09:30:26</p>
+			</div>					   
+			</div>				
+		</div>
 						
+		
+			<div class="table-responsive-xl">
+				<table id="user-table" class="table table-hover mt-0">
+				  <thead class="thead-dark">
+				    <tr>
+				      <th scope="col">First Name</th>
+				      <th scope="col">Last Name</th>   	
+				      <th scope="col">Email</th>
+				      <th scope="col">Member Type</th>
+				      <th scope="col">Subscriber</th>
+				      <th scope="col">Total Logins</th>
+				      <th scope="col">Joined Date</th>
+				      <th scope="col">Recent Login</th>			 
+				      <th scope="col">Purpose</th>			 
+				    </tr>
+				  </thead>
+				  <tbody>
+				  	<% userList.forEach(function(user) { %>
+				  		<tr class="table-rows">
+					      <td><%= user.firstName %></td>
+					      <td><%= user.lastName %></td>
+					      <td><%= user.username %></td>
+					      <td><%= user.rank %></td>
+					      <td><%= user.subscribe %></td>
+					      <td><%= user.reasons.length %></td>
+					      <td><%= moment(user.userSince).tz('America/Los_Angeles').format('MMMM Do YYYY, h:mm:ss a') %></td>
+					      <td><%= moment(user.lastLogin.time).tz('America/Los_Angeles').format('MMMM Do YYYY, h:mm:ss a') %></td>
+					      <td><%= user.reasons[user.reasons.length - 1].text %></td>
+				   	 	</tr>
+				  	<% });%>
+				  </tbody>
+				</table>
 			</div>
-	
-			<table id="user-table" class="table table-hover mt-0">
-			  <thead class="thead-dark">
-			    <tr>
-			      <th scope="col">First Name</th>
-			      <th scope="col">Last Name</th>   	
-			      <th scope="col">Email</th>
-			      <th scope="col">Member Type</th>
-			      <th scope="col">Subscriber</th>
-			      <th scope="col">Total Logins</th>
-			      <th scope="col">Joined Date</th>
-			      <th scope="col">Recent Login</th>			 
-			    </tr>
-			  </thead>
-			  <tbody>
-			  	<% userList.forEach(function(user) { %>
-			  		<tr class="table-rows">
-				      <td><%= user.firstName %></td>
-				      <td><%= user.lastName %></td>
-				      <td><%= user.username %></td>
-				      <td><%= user.rank %></td>
-				      <td><%= user.subscribe %></td>
-				      <td><%= user.reasons.length %></td>
-				      <td><%= moment(user.userSince).tz('America/Los_Angeles').format('MMMM Do YYYY, h:mm:ss a') %></td>
-				      <td><%= moment(user.lastLogin.time).tz('America/Los_Angeles').format('MMMM Do YYYY, h:mm:ss a') %></td>
-			   	 	</tr>
-			  	<% });%>
-			  </tbody>
-			</table>
 		</div>
 		
 	</div>
@@ -256,11 +270,15 @@
 			});
 			$.fn.dataTable.ext.search.push(
 			    function( settings, data, dataIndex ) {
-			        var min = moment($('#min').val());
-			        console.log(min);
+			        var min = moment($('#min').val());			        
 			        var max = moment( $('#max').val());
-			        console.log(max);
-			        var age = moment( data[7], 'MMMM Do YYYY, h:mm:ss a' ) || 0; // use data for the age column
+			        var age;
+			        if ($('#filterType').val() === "Joined Date") {
+			        	age = moment( data[6], 'MMMM Do YYYY, h:mm:ss a' ) || 0;
+			        } else {
+			        	age = moment( data[7], 'MMMM Do YYYY, h:mm:ss a' ) || 0;
+			        }			        
+			       
 			       
 			 
 			        if ( ( isNaN( min ) && isNaN( max ) ) ||
@@ -276,12 +294,13 @@
 			
 			var table =  $('#user-table').DataTable();
 			
-
-
-
 			 $('#min, #max').keyup( function() {
 		        table.draw();
 		     } );
+
+		     $("#filterType").bind("change keyup", function(){
+				  table.draw();
+			});
 			
 
 		    $('#test-btn').click(function() {

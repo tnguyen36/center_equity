@@ -2,9 +2,19 @@
 <script>
 	$(document).ready(function() {
 		$("#validate-form").submit(function(event) {
+			
 			if ($("#password").val() != $("#password2").val()) {
 				event.preventDefault();
 			}			
+		});
+		$("#password, #password2").keyup(function() {
+			if ($("#password").val() != $("#password2").val()) {
+				if ($("#password").val().length != 0) {
+					$("#passwordVerify").show();
+				}					
+			} else {
+				$("#passwordVerify").hide();
+			}	  
 		});
 	});
 </script>

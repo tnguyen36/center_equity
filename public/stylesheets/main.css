@@ -5,6 +5,10 @@ body {
 	font-family:  'Slabo 40px', serif;
 }
 
+.dateTimeFilter {
+	margin: 0 auto;
+}
+
 #emailList {
 	word-wrap: break-word;
 }
@@ -56,19 +60,31 @@ td:nth-child(1), td:nth-child(2), td:nth-child(5) {
 
 }
 
+#user-table_info, #user-table_previous, #user-table_next {
+	color: white !important;
+}
 
+.dataTables_wrapper .dataTables_paginate .paginate_button.current, .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+		color: white !important;
+	    background: linear-gradient(to bottom, white 0%, #4b2e83 100%) !important;
+}
+
+.text-muted {
+	color: red !important;
+	display: none;
+}
 
 .jumbotron{
 	margin-top: 20vh;
 	color: #4b2e83;
-	background-color: rgb(233,236,239);
+	background-color: #ECE9E2;
 	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 	font-weight: 700;
-	outline: 5px solid #b7a57a;
+	outline: 10px double aliceblue;
 }
 
 .user-table .jumbotron {
-	background-color: rgba(233,236,239,0.6);
+	background-color: #ECE9E2;
 	outline: none;
 }
 
@@ -141,6 +157,12 @@ td:nth-child(1), td:nth-child(2), td:nth-child(5) {
 	letter-spacing: 2px;
 	padding-left: 54px;
 	color: #85754d;
+}
+
+.dateTimeFilter .form-group input {
+	height: 30px;
+	padding-left: 10px;
+	background-color: white;
 }
 
 .form-group input:focus {
@@ -233,7 +255,7 @@ td:nth-child(1), td:nth-child(2), td:nth-child(5) {
 }
 
 .transparent-background {
-	background-color: rgba(233,236,239,0.6);
+	background-color: #ECE9E2;
 
 }
 
