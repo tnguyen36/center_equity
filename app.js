@@ -83,6 +83,7 @@ app.post("/register", function(req, res) {
 			} else {
 				reason.author.id = user._id;
 				reason.author.username = req.body.username;
+				reason.time = moment();
 				reason.save();
 				user.reasons.push(reason);
 				user.save();
@@ -122,6 +123,7 @@ app.post('/login', function(req, res, next) {
 				} else {
 					reason.author.id = user._id;
 					reason.author.username = req.body.username;
+					reason.time = moment();
 					reason.save();
 
 					if (moment(user.lastLogin.time) > moment().startOf("day") && moment.utc() < moment().endOf("day")) {
@@ -428,6 +430,17 @@ app.delete("/deleteUsers", function(req, res) {
 	});
 });
 
+// Event list route
+app.get("/events", middleware.isAdmin, function(req, res) {
+	User.find({rank: {$ne: "Admin"}}).populate("reasons").exec(function(err, userList) {
+		if (err) {
+			console.log(err);
+		} else {
+			res.render("events", {userList: userList, moment: moment, tz: tz});
+		}
+	});
+});
+
 // Ajax call for getting subscriber list
 app.get("/subscribers", middleware.isAdmin, function(req, res) {
 	User.find({subscribe: {$eq: "yes"}, rank: {$ne: "Admin"}}, function(err, subscribers) {
@@ -441,7 +454,6 @@ app.get("/subscribers", middleware.isAdmin, function(req, res) {
 		}
 	});
 });
-
 
 
 // http request listener
