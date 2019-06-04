@@ -71,6 +71,7 @@ app.post("/register", function(req, res) {
 		time: moment(),
 		attempts: 1
 	}
+	req.body.username = req.body.username.toLowerCase();
 	var newUser = new User({firstName: req.body.firstName, lastName: req.body.lastName, username: req.body.username, rank: req.body.rank, subscribe: req.body.subscribe, userSince: moment(), lastLogin: lastLogin});
 	User.register(newUser, req.body.password, function(err, user) {
 		if (err) {
@@ -103,6 +104,7 @@ app.get("/login", function(req, res) {
 });
 
 app.post('/login', function(req, res, next) {
+  req.body.username = req.body.username.toLowerCase();
   passport.authenticate('local', function(err, user, info) {
     if (err) { 
     	return next(err); 
@@ -151,33 +153,6 @@ app.get("/logout", function(req, res) {
 	res.redirect("/");
 });
 
-
-// app.post("/login", passport.authenticate("local", 
-// 	{
-// 		successRedirect: "/",
-// 		failureRedirect: "/login",
-// 		failureFlash: true
-// 	}), function(req, res) {
-// 		User.findOne({username: req.body.username}, function(err, user) {
-// 			if (err) {
-// 				console.log(err);
-// 			} else {
-// 				Reason.create(req.body.purpose, function(err, reason) {
-// 					if (err) {
-// 						req.flash("error", "Cannot save Reason");
-// 						console.log(err);
-// 					} else {
-// 						reason.author.id = user._id;
-// 						reason.author.username = req.body.username;
-// 						reason.save();
-// 						user.reasons.push(reason);
-// 						user.save();
-// 					}
-// 				});
-// 			}
-// 		});
-// });
-
 // Forgot Password Route
 app.get("/forgot", function(req, res) {
 	res.render("forgot");
@@ -192,7 +167,7 @@ app.post("/forgot", function(req, res, next) {
       });
     },
     function(token, done) {
-    	User.findOne({ username: req.body.email}, function(err, user) {
+    	User.findOne({ username: req.body.email.toLowerCase()}, function(err, user) {
 			if(!user) {
 				req.flash("error", "Emaill does not exist");
 				return res.redirect("/forgot");
@@ -267,7 +242,7 @@ app.post("/updateUser/:token", function(req, res) {
 					User.updateOne({_id: user._id}, {
 						firstName: req.body.firstName,
 						lastName: req.body.lastName,
-						username: req.body.username,
+						username: req.body.username.toLowerCase(),
 						rank: req.body.rank,
 						subscribe: req.body.subscribe
 					}, function(err) {
@@ -331,25 +306,7 @@ app.post("/reset/:token", function(req, res, next) {
 	        	}
 	      	});
     	}
-    // function(user, done) {
-    //   var smtpTransport = nodemailer.createTransport({
-    //     service: 'Gmail', 
-    //     auth: {
-    //       user: process.env.MAIL_ACCOUNT,
-    //       pass: process.env.MAIL_PW
-    //     }
-    //   });
-    //   var mailOptions = {
-    //     to: user.username,
-    //     from: process.env.MAIL_ACCOUNT,
-    //     subject: 'Your password has been changed',
-    //     text: 'Hello,\n\n' +
-    //       'This is a confirmation that the password for your account ' + user.username + ' has just been changed.\n'
-    //   };
-    //   smtpTransport.sendMail(mailOptions, function(err) {
-    //     done(err);
-    //   });
-    // }
+    
   ], function(err) {
     if (err) return next(err);
     req.flash("success", "Password reset is complete");
@@ -416,12 +373,12 @@ app.get("/stats", middleware.isAdmin, function(req, res) {
 app.delete("/deleteUsers", function(req, res) {
 	async.waterfall([
 		function(callback) {
-			User.remove({rank: {$ne: "Admin"}}, function(err, deletedUsers) {
+			User.deleteMany({rank: {$ne: "Admin"}}, function(err, deletedUsers) {
 				callback(null);
 			});
 		},
 		function(callback) {
-			Reason.remove({}, function(err, deletedReasons) {
+			Reason.deleteMany({}, function(err, deletedReasons) {
 				callback(null);
 			});
 		}
