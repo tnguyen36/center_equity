@@ -67,7 +67,11 @@
 					      <% var eventFlag = false; %>
 					      <% for(var i = user.reasons.length - 1; i >= 0; i--) { %>
 					      		<% if(user.reasons[i].text === "Program Event") { %>
-					      			<td><%= moment(user.reasons[i].time).tz('America/Los_Angeles').format('MMMM Do YYYY, h:mm:ss a') %></td>
+					      			<% if(user.reasons[i].time === null) { %>
+					      				<td>N/A</td>
+					      			<%} else { %>
+					      				<td><%= moment(user.reasons[i].time).tz('America/Los_Angeles').format('MMMM Do YYYY, h:mm:ss a') %></td>
+					      			<%} %>
 					      			<td><%= user.reasons[i].text %></td>
 					      			<% eventFlag = true; %>
 					      			<% break; %>	
