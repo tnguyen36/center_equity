@@ -33,7 +33,7 @@ app.use(flash());
 
 // Session for storing data
 app.use(require("express-session")( {
-	secret: "Rusty Wins",
+	secret: SECRET,
 	resave: false,
 	saveUninitialized: false
 }));
